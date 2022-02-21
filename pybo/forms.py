@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, PasswordField, EmailField
 # from wtforms.fields.html5 import EmailField
@@ -20,4 +22,6 @@ class UserCreateForm(FlaskForm):
 class UserLoginForm(FlaskForm):
     username = StringField('사용자이름', validators=[DataRequired(), Length(min=3, max=25)])
     password = PasswordField('비밀번호', validators=[DataRequired()])
-    
+
+class CommentForm(FlaskForm):
+    content = TextAreaField('내용', validators=[DataRequired()])
