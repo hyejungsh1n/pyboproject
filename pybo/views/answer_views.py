@@ -1,6 +1,8 @@
 from datetime import datetime
 
-from flask import Blueprint, url_for, request, render_template
+from .auth_views import login_required
+
+from flask import Blueprint, url_for, request, render_template, g
 from werkzeug.utils import redirect
 
 from pybo import db
@@ -11,12 +13,13 @@ bp = Blueprint('answer', __name__, url_prefix='/answer')
 
 # question_detil.html에서 method를 post로 지정했으니 여기 또한 그래야 함. 아니면 오류 남
 @bp.route('/create/<int:question_id>', methods=('POST', ))
+@login_required
 def create(question_id):
     form = AnswerForm()
     question = Question.query.get_or_404(question_id)
     if form.validate_on_submit():
         content = request.form['content'] #post폼 방식으로 전송된 항목 중 name속성이 content
-        answer = Answer(content=content, create_date=datetime.now())
+        answer = Answer(content=content, create_date=datetime.now(), user=g.user)
         question.answer_set.append(answer) # question.answer_set 질문에 달린 답변들 
         db.session.commit()
         return redirect(url_for('question.detail', question_id=question_id))
