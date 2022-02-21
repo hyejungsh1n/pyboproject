@@ -2,7 +2,7 @@ from datetime import datetime
 
 from .auth_views import login_required
 
-from flask import Blueprint, url_for, request, render_template, g
+from flask import Blueprint, url_for, request, render_template, g, flash
 from werkzeug.utils import redirect
 
 from pybo import db
@@ -29,3 +29,34 @@ def create(question_id):
 # 플라스크는 브라우저의 요청부터 응답까지의 처리 구간에서 request 객체를 사용하
 # 해주고 이것을 이용해 브라우저에서 요청한 정보를 확인할 수 있음. 
 
+@bp.route('/modify/<int:answer_id>', methods=('GET', 'POST'))
+@login_required
+def modify(answer_id):
+    answer = Answer.query.get_or_404(answer_id)
+    if g.user != answer.user:
+        flash('수정 권한이 없습니다.')
+        return redirect(url_for('question.detail', question_id=answer.question.id))
+    if request.method == "POST":
+        form = AnswerForm()
+        if form.validate_on_submit():
+            form.populate_obj(answer)
+            answer.modify_date = datetime.now() #수정일시 저장
+            db.session.commit()
+            return redirect(url_for('question.detail', question_id=answer.question.id))
+    else:
+        form = AnswerForm(obj=answer)
+    return render_template('answer/answer_form.html', form=form)
+
+# form.populate.obj(answer)는 form변수에 들어있는 데이터(화면에 입력되어있는 데이터)를 answer객체에 적용해준다.
+
+@bp.route('/delete/<int:answer_id>')
+@login_required
+def delete(answer_id):
+    answer = Answer.query.get_or_404(answer_id)
+    question_id = answer.question.id
+    if g.user != answer.user:
+        flash('삭제 권한이 없습니다')
+    else:
+        db.session.delete(answer)
+        db.session.commit()
+    return redirect(url_for('question.detail', question_id=question_id))

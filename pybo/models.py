@@ -7,6 +7,7 @@ class Question(db.Model):
     create_date = db.Column(db.DateTime(), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     user = db.relationship('User', backref=db.backref('question_set'))
+    modify_date = db.Column(db.DateTime(), nullable=True)
     
 
 class Answer(db.Model):
@@ -15,7 +16,9 @@ class Answer(db.Model):
     question = db.relationship('Question', backref=db.backref('answer_set'))
     content = db.Column(db.Text(), nullable=False)
     create_date = db.Column(db.DateTime(), nullable=False)
-
+    modify_date = db.Column(db.DateTime(), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    user = db.relationship('User', backref=db.backref('answer_set'))
 # question_id    
 # ondelete에 지정한 값은 삭제 연동 설정.
 # 즉, 답변 모델의 question_id 속성은 질문 모델 id와 연결되며, ondelete='CASCADE(종속)'에 의해
